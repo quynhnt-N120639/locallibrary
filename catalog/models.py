@@ -22,7 +22,7 @@ class Book(models.Model):
     title = models.CharField(max_length=constants.BOOK_TITTLE_MAX_LENGTH)
     author = models.ForeignKey('Author', on_delete=models.SET_NULL, null=True)
     summary = models.TextField(
-        max_length=constants.BOOK_SUMMARY_MAX_LENGTH, 
+        max_length=constants.BOOK_SUMMARY_MAX_LENGTH,
         help_text=_('Enter a brief description of the book')
     )
     isbn = models.CharField(
@@ -43,6 +43,11 @@ class Book(models.Model):
     def get_absolute_url(self):
         """Returns the url to access a detail record for this book."""
         return reverse('book-detail', args=[str(self.id)])
+
+    def display_genre(self):
+        """Create a string for the Genre. This is required to display genre in Admin."""
+        return ', '.join(genre.name for genre in self.genre.all()[:constants.DISPLAYED_GENRE_MAX])
+    display_genre.short_description = 'Genre'
 
 
 class BookInstance(models.Model):
