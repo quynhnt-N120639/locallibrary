@@ -64,9 +64,9 @@ class BookInstance(models.Model):
 
     status = models.CharField(
         max_length=constants.BOOKINSTANCE_STATUS_MAX_LENGTH,
-        choices=constants.LOAN_STATUS,
+        choices=constants.LoanStatus.choices,
         blank=True,
-        default='m',
+        default=constants.LoanStatus.MAINTENANCE,
         help_text=_('Book availability'),
     )
 
