@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-import os 
+import os
 from pathlib import Path
 from dotenv import load_dotenv
 from pathlib import Path
@@ -119,6 +119,10 @@ USE_I18N = True
 
 USE_TZ = True
 
+# Đường dẫn chứa các file dịch (locale/)
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
