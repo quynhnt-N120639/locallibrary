@@ -1,0 +1,52 @@
+{% extends "base_generic.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+    <h1>{% blocktrans with book_title=book.title %}Title: {{ book_title }}{% endblocktrans %}</h1>
+
+    <p>
+        <strong>{% trans "Author:" %}</strong>
+        <a href="">{{ book.author }}</a>
+    </p> <!-- author detail link not yet defined -->
+
+    <p>
+        <strong>{% trans "Summary:" %}</strong> {{ book.summary }}
+    </p>
+
+    <p>
+        <strong>{% trans "ISBN:" %}</strong> {{ book.isbn }}
+    </p>
+
+    <p>
+        <strong>{% trans "Language:" %}</strong> {{ book.language }}
+    </p>
+
+    <p>
+        <strong>{% trans "Genre:" %}</strong> {{ book.display_genre }}
+    </p>
+
+    <div class="bookinstance-container">
+        <h4>{% trans "Copies" %}</h4>
+        
+        {% for copy in book.bookinstance_set.all %}
+            <hr>
+            <p class="{% if copy.status == STATUS_AVAILABLE %}text-success{% elif copy.status == STATUS_MAINTENANCE %}text-danger{% else %}text-warning{% endif %}">
+                {{ copy.get_status_display }}
+            </p>
+            {% if copy.status != STATUS_AVAILABLE %}
+                <p>
+                    <strong>{% trans "Due to be returned:" %}</strong> {{ copy.due_back }}
+                </p>
+            {% endif %}
+
+            <p>
+                <strong>{% trans "Imprint:" %}</strong> {{ copy.imprint }}
+            </p>
+
+            <p class="text-muted">
+                <strong>{% trans "Id:" %}</strong> {{ copy.id }}
+            </p>
+        {% endfor %}
+    </div>
+{% endblock %}
