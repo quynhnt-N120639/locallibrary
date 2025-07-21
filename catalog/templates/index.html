@@ -16,4 +16,9 @@
     <li><strong>{% trans "Copies available" %}:</strong> {{ num_instances_available }}</li>
     <li><strong>{% trans "Authors" %}:</strong> {{ num_authors }}</li>
 </ul>
+{% blocktrans count num_visits as counter %}
+    You have visited this page {{ counter }} time.
+    {% plural %}
+    You have visited this page {{ counter }} times.
+{% endblocktrans %}
 {% endblock %}
