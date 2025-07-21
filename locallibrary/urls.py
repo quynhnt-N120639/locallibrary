@@ -24,4 +24,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('catalog/', include('catalog.urls')),  # Trỏ đến app catalog
     path('', RedirectView.as_view(url='catalog/')),  # Chuyển hướng trang chủ về catalog/
+    path('accounts/', include('django.contrib.auth.urls')), # Django se tu dong tao cac trang co URL: accounts/login, accounts/logout, /accounts/password_change/, /password_reset/
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
