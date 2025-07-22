@@ -1,0 +1,39 @@
+{% extends "base_generic.html" %}
+{% load i18n %}
+
+{% block content %}
+
+    {% if form.errors %}
+        <p>{% trans "Your username and password didn't match. Please try again." %}</p>
+    {% endif %}
+
+    <!-- next luu URL ma nguoi dung muon truy cap, nhung chua login hoac ko co quyen. VD: /accounts/login/?next=/admin/-->
+    {% if next %} 
+        {% if user.is_authenticated %}
+            <p>{% trans "Your account doesn't have access to this page. To proceed, please login with an account that has access." %}</p>
+        {% else %}
+            <p>{% trans "Please login to see this page." %}</p>
+        {% endif %}
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}">
+        <!-- Bat buộc trong mọi form POST trong Django
+                Bảo vệ chống tấn công CSRF (Cross-Site Request Forgery) -->
+        {% csrf_token %}
+            <table>
+                <tr>
+                    <td>{{ form.username.label_tag }}</td>
+                    <td>{{ form.username }}</td>
+                </tr>
+                <tr>
+                    <td>{{ form.password.label_tag }}</td>
+                    <td>{{ form.password }}</td>
+                </tr>
+            </table>
+            <input type="submit" value="{% trans 'Login' %}" />
+            <input type="hidden" name="next" value="{{ next }}" />
+    </form>
+    {# Assumes you setup the password_reset view in your URLconf #}
+    <p><a href="{% url 'password_reset' %}">{% trans "Lost password?" %}</a></p>
+
+{% endblock %}

@@ -1,6 +1,9 @@
-from django.shortcuts import render
-from django.views import generic
+from django.shortcuts import redirect, render
+from django.views import View, generic
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.decorators import permission_required, login_required
 from catalog.models import Book, Author, BookInstance, Genre
 from . import constants
 
@@ -61,3 +64,25 @@ class BookDetailView(generic.DetailView):  # Cach 1: Class-Based Views
 def book_detail_view(request, pk):  # Cach 2: Function-Based Views
     book = get_object_or_404(Book, pk=pk)
     return render(request, 'catalog/book_detail.html', context={'book': book})
+
+
+class LoanedBooksByUserListView(LoginRequiredMixin, generic.ListView):
+    model = BookInstance
+    template_name = 'catalog/bookinstance_list_borrowed_user.html'
+    paginate_by = constants.BOOKS_PER_PAGE_MAX
+
+    def get_queryset(self):
+        return BookInstance.objects.filter(
+            borrower=self.request.user
+        ).filter(status__exact=constants.LoanStatus.ON_LOAN.value).order_by('due_back')
+
+
+@login_required
+@permission_required('catalog.can_mark_returned')
+def mark_returned(request, pk):
+    book_instance = get_object_or_404(BookInstance, pk=pk)
+    book_instance.status = constants.LoanStatus.AVAILABLE.value
+    book_instance.borrower = None
+    book_instance.due_back = None
+    book_instance.save()
+    return redirect('my-borrowed')

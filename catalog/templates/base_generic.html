@@ -21,6 +21,20 @@
                     <li><a href="{% url 'index' %}">{% trans "Home" %}</a></li>
                     <li><a href="{% url 'books' %}">{% trans "All books" %}</a></li>
                     <li><a href="">{% trans "All authors" %}</a></li>
+                    {% if user.is_authenticated %}
+                        <li>User: {{ user.get_username }}</li>
+                        <li><a href="{% url 'my-borrowed' %}">My Borrowed</a></li>
+                        <li>
+                            <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit">
+                                    Logout
+                                </button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}">Login</a></li>
+                    {% endif %}
                 </ul>
                 {% endblock %}
             </div>
