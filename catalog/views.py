@@ -1,6 +1,9 @@
 from django.shortcuts import render
+from django.views import generic
+from django.shortcuts import get_object_or_404
 from catalog.models import Book, Author, BookInstance, Genre
 from . import constants
+
 
 def index(request):
     """View function for home page of site."""
@@ -15,7 +18,7 @@ def index(request):
     ).count()
     # The 'all()' is implied by default.
     num_authors = Author.objects.count()
-    
+
     context = {
         'num_books': num_books,
         'num_instances': num_instances,
@@ -25,3 +28,32 @@ def index(request):
 
     # Render the HTML template index.html with the data in the context variable
     return render(request, 'index.html', context=context)
+
+
+class BookListView(generic.ListView):
+    model = Book
+    # your own name for the list as a template variable
+    context_object_name = 'book_list'
+    # Specify your own templatename/location
+    template_name = 'catalog/book_list.html'
+    paginate_by = constants.BOOKS_PER_PAGE_MAX
+
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get the context
+        context = super(BookListView, self).get_context_data(**kwargs)
+        return context
+
+
+class BookDetailView(generic.DetailView):  # Cach 1: Class-Based Views
+    model = Book
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['STATUS_AVAILABLE'] = constants.LoanStatus.AVAILABLE.value
+        context['STATUS_MAINTENANCE'] = constants.LoanStatus.MAINTENANCE.value
+        return context
+
+
+def book_detail_view(request, pk):  # Cach 2: Function-Based Views
+    book = get_object_or_404(Book, pk=pk)
+    return render(request, 'catalog/book_detail.html', context={'book': book})
