@@ -135,6 +135,7 @@ class AuthorListView(generic.ListView):
     model = Author
     content_object_name = 'author_list'
     template_name = 'catalog/author_list.html'
+    paginate_by = constants.AUTHORS_PER_PAGE_MAX
 
 
 class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
