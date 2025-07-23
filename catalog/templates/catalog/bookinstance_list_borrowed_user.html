@@ -14,6 +14,7 @@
 
                 {% if perms.catalog.can_mark_returned %}
                     <a href="{% url 'book-return' bookinst.pk %}">{% trans "Return book" %}</a>
+                    <a href="{% url 'renew-book-librarian' bookinst.pk %}">{% trans "Renew" %}</a>
                 {% endif %}
             {% endfor %}
         </ul>
