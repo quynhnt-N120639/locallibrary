@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
     {% block title %}
-        <title>Local Library</title>
+        <title>{% trans "Local Library" %}</title>
     {% endblock %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,38 +20,50 @@
                 <ul class="sidebar-nav">
                     <li><a href="{% url 'index' %}">{% trans "Home" %}</a></li>
                     <li><a href="{% url 'books' %}">{% trans "All books" %}</a></li>
-                    <li><a href="">{% trans "All authors" %}</a></li>
+                    <li><a href="{% url 'authors' %}">{% trans "All authors" %}</a></li>
+                    
                     {% if user.is_authenticated %}
-                        <li>User: {{ user.get_username }}</li>
-                        <li><a href="{% url 'my-borrowed' %}">My Borrowed</a></li>
+                        <li>{% blocktrans with username=user.get_username %}User: {{ username }}{% endblocktrans %}</li>
+                        <li><a href="{% url 'my-borrowed' %}">{% trans "My Borrowed" %}</a></li>
                         <li>
                             <form method="post" action="{% url 'logout' %}" style="display:inline;">
                                 {% csrf_token %}
-                                <button type="submit">
-                                    Logout
-                                </button>
+                                <button type="submit">{% trans "Logout" %}</button>
                             </form>
                         </li>
+
+                        {% if user.is_staff %}
+                            <li><strong>{% trans "Role" %}:</strong> {% trans "Staff" %}</li>
+                            <li><a href="{% url 'all-borrowed' %}">{% trans "All Borrowed Books" %}</a></li>
+                        {% endif %}
                     {% else %}
-                        <li><a href="{% url 'login' %}">Login</a></li>
+                        <li><a href="{% url 'login' %}">{% trans "Login" %}</a></li>
                     {% endif %}
                 </ul>
                 {% endblock %}
             </div>
-            <div class="col-sm-10 ">
+
+            <div class="col-sm-10">
                 {% block content %}{% endblock %}
+                
                 {% block pagination %}
                     {% if is_paginated %}
                         <div class="pagination">
                             <span class="page-links">
                                 {% if page_obj.has_previous %}
-                                    <a href="{{ request.path }}?page={{ page_obj.previous_page_number}}">previous</a>
+                                    <a href="{{ request.path }}?page={{ page_obj.previous_page_number }}">
+                                        {% trans "previous" %}
+                                    </a>
                                 {% endif %}
                                 <span class="page-current">
-                                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                                    {% blocktrans with current=page_obj.number total=page_obj.paginator.num_pages %}
+                                        Page {{ current }} of {{ total }}.
+                                    {% endblocktrans %}
                                 </span>
                                 {% if page_obj.has_next %}
-                                    <a href="{{ request.path }}?page={{ page_obj.next_page_number }}">next</a>
+                                    <a href="{{ request.path }}?page={{ page_obj.next_page_number }}">
+                                        {% trans "next" %}
+                                    </a>
                                 {% endif %}
                             </span>
                         </div>
@@ -61,5 +73,4 @@
         </div>
     </div>
 </body>
-
 </html>

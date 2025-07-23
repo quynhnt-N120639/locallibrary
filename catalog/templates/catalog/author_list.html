@@ -1,0 +1,42 @@
+{% extends "base_generic.html" %}
+{% load i18n %}
+
+{% block content %}
+  <h1>{% trans "Author List" %}</h1>
+
+  {# Button for creating a new author only for staff #}
+  {% if user.is_authenticated and user.is_staff %}
+    <p>
+      <a href="{% url 'author-create' %}" class="btn btn-primary">
+        {% trans "Create new author" %}
+      </a>
+    </p>
+  {% endif %}
+  
+  {% if author_list %}
+    <ul>
+      {% for author in author_list %}
+        <li>
+          {% if user.is_staff %}
+            <a href="{% url 'author-update' author.id %}">
+              {{ author.last_name }}, {{ author.first_name }}
+            </a>
+          {% else %}
+            {{ author.last_name }}, {{ author.first_name }}
+          {% endif %}
+
+        <br>
+        {% trans "Birth" %}: {{ author.date_of_birth|date:"d/m/Y" }},
+        {% trans "Death" %}: 
+        {% if author.date_of_death %}
+            {{ author.date_of_death|date:"d/m/Y" }}
+        {% else %}
+            {% trans "N/A" %}
+        {% endif %}        
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>{% trans "There are no authors in the library." %}</p>
+  {% endif %}
+{% endblock %}

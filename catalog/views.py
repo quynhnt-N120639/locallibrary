@@ -1,10 +1,14 @@
+import datetime
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
+from django.urls import reverse, reverse_lazy
 from django.views import View, generic
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import permission_required, login_required
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from catalog.models import Book, Author, BookInstance, Genre
+from catalog.forms import RenewBookModelForm
 from . import constants
 
 
@@ -73,8 +77,19 @@ class LoanedBooksByUserListView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         return BookInstance.objects.filter(
-            borrower=self.request.user
-        ).filter(status__exact=constants.LoanStatus.ON_LOAN.value).order_by('due_back')
+                borrower=self.request.user
+            ).filter(status__exact=constants.LoanStatus.ON_LOAN.value
+            ).order_by('due_back')
+
+
+class AllBorrowedBooksListView(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):
+    model = BookInstance
+    template_name = 'catalog/bookinstance_list_borrowed_user.html'
+    permission_required = 'catalog.can_mark_returned'
+
+    def get_queryset(self):
+        return BookInstance.objects.filter(
+            status__exact=constants.LoanStatus.ON_LOAN.value).order_by('due_back')
 
 
 @login_required
@@ -86,3 +101,60 @@ def mark_returned(request, pk):
     book_instance.due_back = None
     book_instance.save()
     return redirect('my-borrowed')
+
+
+@login_required
+@permission_required('catalog.can_mark_returned', raise_exception=True)
+def renew_book_librarian(request, pk):
+    """View function for renewing a specific BookInstance by librarian."""
+    book_instance = get_object_or_404(BookInstance, pk=pk)
+
+    # If this is a POST request then process the Form data
+    if request.method == 'POST':
+        form = RenewBookModelForm(request.POST)
+
+        # Check if the form is valid:
+        if form.is_valid():
+            # process the data in form.cleaned_data as required (here we just write it to the modeldue_back field)
+            book_instance.due_back = form.cleaned_data['due_back']
+            book_instance.save()
+            return HttpResponseRedirect(reverse('all-borrowed'))
+    # If this is a GET (or any other method) create the default form.
+    else:
+        proposed_renewal_date = datetime.date.today() + datetime.timedelta(weeks=3)
+        form = RenewBookModelForm(initial={'due_back': proposed_renewal_date})
+
+    context = {
+        'form': form,
+        'book_instance': book_instance,
+    }
+    return render(request, 'catalog/book_renew_librarian.html', context)
+
+
+class AuthorListView(generic.ListView):
+    model = Author
+    content_object_name = 'author_list'
+    template_name = 'catalog/author_list.html'
+
+
+class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_staff
+
+
+class AuthorCreate(StaffRequiredMixin, CreateView):
+    model = Author
+    fields = ['first_name', 'last_name', 'date_of_birth', 'date_of_death']
+    initial = {'date_of_death': constants.INITIAL_DEADTH_DATE_OF_AUTHOR}
+    success_url = reverse_lazy('authors')
+
+
+class AuthorUpdate(StaffRequiredMixin, UpdateView):
+    model = Author
+    fields = ['first_name', 'last_name', 'date_of_birth', 'date_of_death']
+    success_url = reverse_lazy('authors')
+
+
+class AuthorDelete(StaffRequiredMixin, DeleteView):
+    model = Author
+    success_url = reverse_lazy('authors')
