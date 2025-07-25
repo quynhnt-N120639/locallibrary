@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: locallibrary
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn locallibrary.wsgi"
+    envVars:
+      - key: DEBUG
+        value: false
+      - key: SECRET_KEY
+        generateValue: true
+    postDeploy:
+      - python manage.py migrate
+      - python create_admin.py
